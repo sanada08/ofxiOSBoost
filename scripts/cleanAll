@@ -18,8 +18,8 @@ CPPSTD=c++98    #c++11, c++99, c++14
 STDLIB=libstdc++   # libc++
 COMPILER=clang++
 
-BOOST_V1=1.60.0
-BOOST_V2=1_60_0
+BOOST_V1=1.70.0
+BOOST_V2=1_70_0
 
 CURRENTPATH=`pwd`
 LOGDIR="$CURRENTPATH/build/logs/"
@@ -52,7 +52,7 @@ case $CURRENTPATH in
           ;;
 esac
 
-: ${BOOST_LIBS:="random regex graph random chrono thread signals filesystem system date_time"}
+: ${BOOST_LIBS:="random regex graph random chrono thread filesystem system date_time"}
 : ${IPHONE_SDKVERSION:=`xcodebuild -showsdks | grep iphoneos | egrep "[[:digit:]]+\.[[:digit:]]+" -o | tail -1`}
 : ${EXTRA_CPPFLAGS:="-DBOOST_AC_USE_PTHREADS -DBOOST_SP_USE_PTHREADS -std=$CPPSTD -stdlib=$STDLIB"}
 

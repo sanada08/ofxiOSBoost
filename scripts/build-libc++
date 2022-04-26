@@ -24,13 +24,13 @@ here="`dirname \"$0\"`"
 echo "cd-ing to $here"
 cd "$here" || exit 1
 
-CPPSTD=c++11    #c++89, c++99, c++14
+CPPSTD=c++17    #c++89, c++99, c++14
 STDLIB=libc++   # libstdc++
 COMPILER=clang++
 PARALLEL_MAKE=`sysctl -n hw.ncpu` # how many threads to make boost with
 
-BOOST_V1=1.60.0
-BOOST_V2=1_60_0
+BOOST_V1=1.70.0
+BOOST_V2=1_70_0
 
 #BITCODE="-fembed-bitcode"  # Uncomment this line for Bitcode generation
 
@@ -65,7 +65,7 @@ case $CURRENTPATH in
           ;;
 esac
 
-: ${BOOST_LIBS:="random regex graph random chrono thread signals filesystem system date_time locale"}
+: ${BOOST_LIBS:="random regex graph random chrono thread  filesystem system date_time locale"}
 : ${IPHONE_SDKVERSION:=`xcodebuild -showsdks | grep iphoneos | egrep "[[:digit:]]+\.[[:digit:]]+" -o | tail -1`}
 : ${EXTRA_CPPFLAGS:="-fPIC -DBOOST_SP_USE_SPINLOCK -std=$CPPSTD -stdlib=$STDLIB -miphoneos-version-min=$IOS_MIN_VERSION $BITCODE -fvisibility=hidden -fvisibility-inlines-hidden"}
 
@@ -415,7 +415,7 @@ buildIncludes()
 
 mkdir -p $IOSBUILDDIR
 
-cleanEverythingReadyToStart #may want to comment if repeatedly running during dev
+# cleanEverythingReadyToStart #may want to comment if repeatedly running during dev
 restoreBoost
 
 echo "BOOST_VERSION:     $BOOST_VERSION"
@@ -432,8 +432,8 @@ else
     echo "BITCODE EMBEDDED: YES with: $BITCODE"
 fi
 
-downloadBoost
-unpackBoost
+# downloadBoost
+# unpackBoost
 inventMissingHeaders
 prepare
 bootstrapBoost

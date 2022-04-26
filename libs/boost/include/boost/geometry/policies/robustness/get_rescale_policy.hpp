@@ -20,10 +20,12 @@
 
 #include <cstddef>
 
-#include <boost/type_traits.hpp>
 #include <boost/mpl/assert.hpp>
+#include <boost/type_traits/is_floating_point.hpp>
+#include <boost/type_traits/is_same.hpp>
 
 #include <boost/geometry/core/assert.hpp>
+#include <boost/geometry/core/config.hpp>
 #include <boost/geometry/core/tag_cast.hpp>
 
 #include <boost/geometry/algorithms/envelope.hpp>
@@ -248,13 +250,19 @@ struct rescale_policy_type
     : public detail::get_rescale_policy::rescale_policy_type
     <
         Point,
-#if defined(BOOST_GEOMETRY_NO_ROBUSTNESS)
-        false
-#else
+#if defined(BOOST_GEOMETRY_USE_RESCALING)
         boost::is_floating_point
-        <
-            typename geometry::coordinate_type<Point>::type
-        >::type::value
+            <
+                typename geometry::coordinate_type<Point>::type
+            >::type::value
+        &&
+        boost::is_same
+            <
+                typename geometry::coordinate_system<Point>::type,
+                geometry::cs::cartesian
+            >::value
+#else
+        false
 #endif
     >
 {

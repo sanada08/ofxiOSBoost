@@ -12,9 +12,9 @@
 
 #include <boost/assert.hpp>
 #include <boost/config.hpp>
-#include <boost/context/execution_context.hpp>
 
 #include <boost/coroutine2/detail/config.hpp>
+#include <boost/coroutine2/detail/disable_overload.hpp>
 
 #ifdef BOOST_HAS_ABI_HEADERS
 #  include BOOST_ABI_PREFIX
@@ -34,29 +34,28 @@ private:
 
     control_block   *   cb_;
 
-    explicit pull_coroutine( control_block *);
+    explicit pull_coroutine( control_block *) noexcept;
 
-    bool has_result_() const;
+    bool has_result_() const noexcept;
 
 public:
-    template< typename Fn >
-    explicit pull_coroutine( Fn &&, bool = false);
+    template< typename Fn,
+              typename = detail::disable_overload< pull_coroutine, Fn >
+    >
+    explicit pull_coroutine( Fn &&);
 
     template< typename StackAllocator, typename Fn >
-    explicit pull_coroutine( StackAllocator, Fn &&, bool = false);
+    pull_coroutine( StackAllocator &&, Fn &&);
 
     ~pull_coroutine();
 
     pull_coroutine( pull_coroutine const&) = delete;
     pull_coroutine & operator=( pull_coroutine const&) = delete;
 
-    pull_coroutine( pull_coroutine &&);
+    pull_coroutine( pull_coroutine &&) noexcept;
 
-    pull_coroutine & operator=( pull_coroutine && other) {
-        if ( this != & other) {
-            cb_ = other.cb_;
-            other.cb_ = nullptr;
-        }
+    pull_coroutine & operator=( pull_coroutine && other) noexcept {
+        std::swap( cb_, other.cb_);
         return * this;
     }
 
@@ -66,13 +65,13 @@ public:
 
     bool operator!() const noexcept;
 
-    T get();
+    T get() noexcept;
 
-    class iterator : public std::iterator< std::input_iterator_tag, typename std::remove_reference< T >::type > {
+    class iterator {
     private:
-        pull_coroutine< T > *   c_;
+        pull_coroutine< T > *   c_{ nullptr };
 
-        void fetch_() {
+        void fetch_() noexcept {
             BOOST_ASSERT( nullptr != c_);
             if ( ! ( * c_) ) {
                 c_ = nullptr;
@@ -88,33 +87,27 @@ public:
         }
 
     public:
-        typedef typename iterator::pointer pointer_t;
-        typedef typename iterator::reference reference_t;
+        typedef std::input_iterator_tag iterator_category;
+        typedef typename std::remove_reference< T >::type value_type;
+        typedef std::ptrdiff_t difference_type;
+        typedef value_type * pointer;
+        typedef value_type & reference;
 
-        iterator() :
-            c_( nullptr) {
-        }
+        typedef pointer   pointer_t;
+        typedef reference reference_t;
 
-        explicit iterator( pull_coroutine< T > * c) :
-            c_( c) {
+        iterator() noexcept = default;
+
+        explicit iterator( pull_coroutine< T > * c) noexcept :
+            c_{ c } {
             fetch_();
         }
 
-        iterator( iterator const& other) :
-            c_( other.c_) {
-        }
-
-        iterator & operator=( iterator const& other) {
-            if ( this == & other) return * this;
-            c_ = other.c_;
-            return * this;
-        }
-
-        bool operator==( iterator const& other) const {
+        bool operator==( iterator const& other) const noexcept {
             return other.c_ == c_;
         }
 
-        bool operator!=( iterator const& other) const {
+        bool operator!=( iterator const& other) const noexcept {
             return other.c_ != c_;
         }
 
@@ -123,13 +116,15 @@ public:
             return * this;
         }
 
-        iterator operator++( int) = delete;
+        void operator++( int) {
+            increment_();
+        }
 
-        reference_t operator*() const {
+        reference_t operator*() const noexcept {
             return c_->cb_->get();
         }
 
-        pointer_t operator->() const {
+        pointer_t operator->() const noexcept {
             return std::addressof( c_->cb_->get() );
         }
     };
@@ -147,29 +142,28 @@ private:
 
     control_block   *   cb_;
 
-    explicit pull_coroutine( control_block *);
+    explicit pull_coroutine( control_block *) noexcept;
 
-    bool has_result_() const;
+    bool has_result_() const noexcept;
 
 public:
-    template< typename Fn >
-    explicit pull_coroutine( Fn &&, bool = false);
+    template< typename Fn,
+              typename = detail::disable_overload< pull_coroutine, Fn >
+    >
+    explicit pull_coroutine( Fn &&);
 
     template< typename StackAllocator, typename Fn >
-    explicit pull_coroutine( StackAllocator, Fn &&, bool = false);
+    pull_coroutine( StackAllocator &&, Fn &&);
 
     ~pull_coroutine();
 
     pull_coroutine( pull_coroutine const&) = delete;
     pull_coroutine & operator=( pull_coroutine const&) = delete;
 
-    pull_coroutine( pull_coroutine &&);
+    pull_coroutine( pull_coroutine &&) noexcept;
 
-    pull_coroutine & operator=( pull_coroutine && other) {
-        if ( this != & other) {
-            cb_ = other.cb_;
-            other.cb_ = nullptr;
-        }
+    pull_coroutine & operator=( pull_coroutine && other) noexcept {
+        std::swap( cb_, other.cb_);
         return * this;
     }
 
@@ -179,13 +173,13 @@ public:
 
     bool operator!() const noexcept;
 
-    T & get();
+    T & get() noexcept;
 
-    class iterator : public std::iterator< std::input_iterator_tag, typename std::remove_reference< T >::type > {
+    class iterator {
     private:
-        pull_coroutine< T & > *   c_;
+        pull_coroutine< T & > *   c_{ nullptr };
 
-        void fetch_() {
+        void fetch_() noexcept {
             BOOST_ASSERT( nullptr != c_);
             if ( ! ( * c_) ) {
                 c_ = nullptr;
@@ -201,33 +195,27 @@ public:
         }
 
     public:
-        typedef typename iterator::pointer pointer_t;
-        typedef typename iterator::reference reference_t;
+        typedef std::input_iterator_tag iterator_category;
+        typedef typename std::remove_reference< T >::type value_type;
+        typedef std::ptrdiff_t difference_type;
+        typedef value_type * pointer;
+        typedef value_type & reference;
 
-        iterator() :
-            c_( nullptr) {
-        }
+        typedef pointer   pointer_t;
+        typedef reference reference_t;
 
-        explicit iterator( pull_coroutine< T & > * c) :
-            c_( c) {
+        iterator() noexcept = default;
+
+        explicit iterator( pull_coroutine< T & > * c) noexcept :
+            c_{ c } {
             fetch_();
         }
 
-        iterator( iterator const& other) :
-            c_( other.c_) {
-        }
-
-        iterator & operator=( iterator const& other) {
-            if ( this == & other) return * this;
-            c_ = other.c_;
-            return * this;
-        }
-
-        bool operator==( iterator const& other) const {
+        bool operator==( iterator const& other) const noexcept {
             return other.c_ == c_;
         }
 
-        bool operator!=( iterator const& other) const {
+        bool operator!=( iterator const& other) const noexcept {
             return other.c_ != c_;
         }
 
@@ -236,13 +224,15 @@ public:
             return * this;
         }
 
-        iterator operator++( int) = delete;
+        void operator++( int) {
+            increment_();
+        }
 
-        reference_t operator*() const {
+        reference_t operator*() const noexcept {
             return c_->cb_->get();
         }
 
-        pointer_t operator->() const {
+        pointer_t operator->() const noexcept {
             return std::addressof( c_->cb_->get() );
         }
     };
@@ -260,27 +250,26 @@ private:
 
     control_block   *   cb_;
 
-    explicit pull_coroutine( control_block *);
+    explicit pull_coroutine( control_block *) noexcept;
 
 public:
-    template< typename Fn >
-    explicit pull_coroutine( Fn &&, bool = false);
+    template< typename Fn,
+              typename = detail::disable_overload< pull_coroutine, Fn >
+    >
+    explicit pull_coroutine( Fn &&);
 
     template< typename StackAllocator, typename Fn >
-    explicit pull_coroutine( StackAllocator, Fn &&, bool = false);
+    pull_coroutine( StackAllocator &&, Fn &&);
 
     ~pull_coroutine();
 
     pull_coroutine( pull_coroutine const&) = delete;
     pull_coroutine & operator=( pull_coroutine const&) = delete;
 
-    pull_coroutine( pull_coroutine &&);
+    pull_coroutine( pull_coroutine &&) noexcept;
 
-    pull_coroutine & operator=( pull_coroutine && other) {
-        if ( this != & other) {
-            cb_ = other.cb_;
-            other.cb_ = nullptr;
-        }
+    pull_coroutine & operator=( pull_coroutine && other) noexcept {
+        std::swap( cb_, other.cb_);
         return * this;
     }
 
